@@ -67,21 +67,26 @@ let tempNum2 = 0;
 let tempCurrentNumber = [];
 
 // Checked 
-let lastChar = calcInput.textContent.slice(-1);
-
+let lastChar = "";
 // Calculator Event Listeners
 document.addEventListener('keydown', (event) => { 
+    lastChar = calcInput.textContent.slice(-1);
+
     // Removing last key
+    console.log()
     if (event.key == 'Backspace') {
         if (lastChar == " ") {
-            alert(tempCurrentNumber.length);
             calcInput.textContent = calcInput.textContent.slice(0, -3);
             currentOperator = "";
             operatorCheck = 0;
             for (let i = 0; i < 3; i++) {
                 tempCurrentNumber.pop();
             }
-            alert(tempCurrentNumber.length);
+            // Resets variables to pre-operator status
+            tempNum1.toString().split("").forEach(temp => {
+                tempCurrentNumber.push(temp);
+            });
+            tempNum1 = 0;
             return;
         }
         calcInput.textContent = calcInput.textContent.slice(0, -1); 
@@ -124,15 +129,17 @@ document.addEventListener('keydown', (event) => {
 // Operator functions
 function additionEvent() {
     if (tempCurrentNumber.length == 0) {
-            return;
+        return;
     }
     currentOperator = "+";
+    // Stops some operator being displayed twice
     if (operatorCheck == 1 && lastChar == " ") {
         calcInput.textContent = calcInput.textContent.slice(0, -3);
     }
     if (tempNum1 == 0) {
         tempNum1 = Number(tempCurrentNumber.join(''));
         tempCurrentNumber = [];
+        operatorCheck = 1;
         calcInput.textContent += " + ";
         return;
     }
