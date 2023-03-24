@@ -1,6 +1,7 @@
 const calcInput = document.getElementById("calc-input");
 const calcOutput = document.getElementById("calc-sum");
 
+const buttonClear = document.getElementById("but-AC");
 const buttonZero = document.getElementById("but-0");
 const buttonOne = document.getElementById("but-1");
 const buttonTwo = document.getElementById("but-2");
@@ -13,42 +14,39 @@ const buttonEight = document.getElementById("but-8");
 const buttonNine = document.getElementById("but-9");
 const buttonPoint = document.getElementById("but-point");
 
-const buttonClear = document.getElementById("but-AC");
 const buttonDivide = document.getElementById("but-divide");
 const buttonAdd = document.getElementById("but-add");
 const buttonMinus = document.getElementById("but-minus");
 const buttonMultiply = document.getElementById("but-multiply");
 const buttonEquals = document.getElementById("but-equals");
 
-// Init variables
-let operatorCheck = 0;
-let currentOperator = "";
-let tempNum1 = 0;
-let tempNum2 = 0;
-let tempCurrentNumber = [];
-let lastChar = "";
-
 function add(a, b) {
     return a + b;
 }
+
 function subtract(a, b) {
     return a - b;
 }
+
 function multiply(a, b) {
     return a * b;
 }
+
 function divide (a, b) {
     return a / b;
 }
+
 function operate() {
+    alert(`Temp1 = ${tempNum1} Temp 2 = ${tempNum2}`)
     let total = 0;
-    console.log(`Current Operator = ${currentOperator}`);
+
     // Check which operator is used
     if (currentOperator == "+") {
         total = add(tempNum1, tempNum2)
     }
     else if (currentOperator == "/") {
         total = divide(tempNum1, tempNum2)
+
     }
     else if (currentOperator == "-") {
         total = subtract(tempNum1, tempNum2)
@@ -58,14 +56,24 @@ function operate() {
     }
     calcOutput.textContent = total.toLocaleString("en-UK");
     clearMemory();
-    // Resets tempNum1 to current sum, to continue operations
-    tempNum1 = total;
     return;
 }
+
+// Init variables
+let operatorCheck = 0;
+let currentOperator = "";
+let tempNum1 = 0;
+let tempNum2 = 0;
+let tempCurrentNumber = [];
+
+// Checked 
+let lastChar = "";
 // Calculator Event Listeners
 document.addEventListener('keydown', (event) => { 
     lastChar = calcInput.textContent.slice(-1);
+
     // Removing last key
+    console.log()
     if (event.key == 'Backspace') {
         if (lastChar == " ") {
             calcInput.textContent = calcInput.textContent.slice(0, -3);
@@ -117,12 +125,13 @@ document.addEventListener('keydown', (event) => {
         sumEvent();
     }
 })
+
 // Operator functions
 function additionEvent() {
-    console.log(tempCurrentNumber);
     if (tempCurrentNumber.length == 0) {
         return;
     }
+    currentOperator = "+";
     // Stops some operator being displayed twice
     if (operatorCheck == 1 && lastChar == " ") {
         calcInput.textContent = calcInput.textContent.slice(0, -3);
@@ -132,15 +141,12 @@ function additionEvent() {
         tempCurrentNumber = [];
         operatorCheck = 1;
         calcInput.textContent += " + ";
-        currentOperator = "+";
         return;
     }
     if (tempNum2 == 0) {
         tempNum2 = Number(tempCurrentNumber.join(''));
         tempCurrentNumber = [];
         operate();
-        currentOperator = "+";
-        calcInput.textContent += " + ";
         return
     }
     operatorCheck = 1;
@@ -150,27 +156,20 @@ function subtractEvent() {
     if (tempCurrentNumber.length == 0) {
         return;
     }
-    // Stops some operator being displayed twice
+    currentOperator = "-";
     if (operatorCheck == 1 && lastChar == " ") {
         calcInput.textContent = calcInput.textContent.slice(0, -3);
     }
     if (tempNum1 == 0) {
         tempNum1 = Number(tempCurrentNumber.join(''));
         tempCurrentNumber = [];
-        operatorCheck = 1;
         calcInput.textContent += " - ";
         return;
     }
     if (tempNum2 == 0) {
-        console.log(`Current Operator = ${currentOperator}`);
-        console.log("tempNum2 =0");
         tempNum2 = Number(tempCurrentNumber.join(''));
         tempCurrentNumber = [];
-        console.log(currentOperator)
-
         operate();
-        currentOperator = "-";  
-        calcInput.textContent += " - ";
         return
     }
     operatorCheck = 1;
@@ -180,24 +179,20 @@ function divideEvent() {
     if (tempCurrentNumber.length == 0) {
         return;
     }
-    // Stops some operator being displayed twice
+    currentOperator = "/";
     if (operatorCheck == 1 && lastChar == " ") {
         calcInput.textContent = calcInput.textContent.slice(0, -3);
     }
     if (tempNum1 == 0) {
         tempNum1 = Number(tempCurrentNumber.join(''));
         tempCurrentNumber = [];
-        operatorCheck = 1;
-        calcInput.textContent += " / ";
+        calcInput.textContent += " ÷ ";
         return;
     }
     if (tempNum2 == 0) {
         tempNum2 = Number(tempCurrentNumber.join(''));
         tempCurrentNumber = [];
         operate();
-        currentOperator = "/";
-
-        calcInput.textContent += " / ";
         return
     }
     operatorCheck = 1;
@@ -207,13 +202,13 @@ function multiplyEvent() {
     if (tempCurrentNumber.length == 0) {
         return;
     }
+    currentOperator = ("*");
     if (operatorCheck == 1 && lastChar == " ") {
         calcInput.textContent = calcInput.textContent.slice(0, -3);
     }
     if (tempNum1 == 0) {
         tempNum1 = Number(tempCurrentNumber.join(''));
         tempCurrentNumber = [];
-        operatorCheck = 1;
         calcInput.textContent += " × ";
         return;
     }
@@ -221,26 +216,19 @@ function multiplyEvent() {
         tempNum2 = Number(tempCurrentNumber.join(''));
         tempCurrentNumber = [];
         operate();
-        currentOperator = ("*");
-        calcInput.textContent += " × ";
         return
     }
     operatorCheck = 1;
     calcInput.textContent += " × ";
 }
 function sumEvent() {
-    console.log("sumEvent triggered")
     if (tempCurrentNumber.length == 0) {
-        console.log("tempCurrentNumber.len triggered")
         return;
     }   
+    operatorCheck = 0;
     tempNum2 = Number(tempCurrentNumber.join(''));
+    tempCurrentNumber = [];
     operate();
-    // Reset for continuation of calculation
-    tempNum1.toString().split("").forEach(temp => {
-        tempCurrentNumber.push(temp);
-    });
-    tempNum1 = 0;
 }
 function zeroEvent() {
     if (tempCurrentNumber.length == 0)
@@ -261,18 +249,21 @@ function pointEvent() {
     tempCurrentNumber.push(".");
     calcInput.textContent += ".";
 }
+
 // Clear Memory
 function clearMemory() {
     tempCurrentNumber = [];
     tempNum1 = 0;
     tempNum2 = 0;
-    operatorCheck = 0;
+    currentOperator = 0;
 }
+
 // Event Listeners
 buttonAdd.addEventListener("click", additionEvent);
 buttonMinus.addEventListener("click", subtractEvent);
 buttonDivide.addEventListener("click", divideEvent);
 buttonMultiply.addEventListener("click", multiplyEvent);
+
 buttonClear.addEventListener("mousedown", () => {
     clearMemory();
     calcOutput.textContent = "";
