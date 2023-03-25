@@ -5,42 +5,34 @@ const calcOutput = document.getElementById("calc-sum");
 let operatorCheck = 0, tempNum1 = 0, tempNum2 = 0;
 let currentOperator = "", lastChar = "";
 let tempCurrentNumber = [];
+// calcDone clears screen instead if user types number after original sum
+let calcDone = false;
 
 // Functions
-function add(a, b) {
-    return a + b;
-}
-function subtract(a, b) {
-    return a - b;
-}
-function multiply(a, b) {
-    return a * b;
-}
-function divide (a, b) {
-    return a / b;
-}
 function operate() {
     let total = 0;
     // Check which operator is used
     if (currentOperator == "+") {
-        total = add(tempNum1, tempNum2)
-    }
-    else if (currentOperator == "/") {
-        total = divide(tempNum1, tempNum2)
+        total = tempNum1 + tempNum2;
     }
     else if (currentOperator == "-") {
-        total = subtract(tempNum1, tempNum2)
+        total = tempNum1 - tempNum2;
+    }
+    else if (currentOperator == "/") {
+        total = tempNum1 / tempNum2;
     }
     else {
-        total = multiply(tempNum1, tempNum2)
+        total = tempNum1 * tempNum2;
     }
     calcOutput.textContent = total.toLocaleString("en-UK");
     clearMemory();
     // Resets tempNum1 to current sum, to continue operations
     tempNum1 = total;
+    calcDone = true;
     return;
 }
 function operatorEvent(symbol) {
+    calcDone = false;
     if (tempCurrentNumber.length == 0) {
         return;
     }
@@ -75,9 +67,9 @@ function checkTempNum2(symbol) {
     calcInput.textContent += " " + symbol + " ";
 }
 function sumEvent() {
-    if (tempCurrentNumber.length == 0) {
+    if (tempCurrentNumber.length == 0 || tempNum1 == 0) {
         return;
-    }   
+    }
     tempNum2 = Number(tempCurrentNumber.join(''));
     operate();
     // Reset for continuation of calculation
@@ -85,25 +77,6 @@ function sumEvent() {
         tempCurrentNumber.push(temp);
     });
     tempNum1 = 0;
-}
-function zeroEvent() {
-    if (tempCurrentNumber.length == 0)
-    {
-        calcInput.textContent += "0.";
-        tempCurrentNumber.push("0.");
-        return;
-    }
-    calcInput.textContent += "0";
-}
-function pointEvent() {
-    if (tempCurrentNumber.length == 0 || lastChar == ".")
-    {
-        calcInput.textContent += "0.";
-        tempCurrentNumber.push("0.");
-        return;
-    }
-    tempCurrentNumber.push(".");
-    calcInput.textContent += ".";
 }
 function clearMemory() {
     tempCurrentNumber = [];
@@ -141,26 +114,45 @@ function callOperators(operator) {
         case "=":
             sumEvent();
             return;
-        case "0":
-            zeroEvent();
-            return;
-        case ".":
-            pointEvent();
-            return;
         case "c":
-            clearMemory();
-            calcOutput.textContent = "";
-            calcInput.textContent = ""; 
+            clearCalc();
             return;
         case "Enter":
             sumEvent();
             return;
     };
 }
+function clearCalc() {
+    clearMemory();
+    calcOutput.textContent = "";
+    calcInput.textContent = ""; 
+    calcDone = false;
+    return;
+}
+function periodEvent() {
+    if (lastChar == ".") {
+        return;
+    }
+    calcInput.textContent += "."
+    tempCurrentNumber.push(".");
+}
+function numberInput(number) {
+    for (let i = 0; i <= 9; i++)
+    {
+        if (number == i)
+        {
+            if (calcDone)
+            {
+                clearCalc();
+            }
+            calcInput.textContent += i;
+            tempCurrentNumber.push(i);
+        }
+    }
+}
 // Keyboard events
-document.addEventListener('keydown', (event) => { 
+document.addEventListener('keydown', (event) => {
     lastChar = calcInput.textContent.slice(-1);
-    // Removing last key
     let key = event.key;
     if (key == 'Backspace') {
         if (lastChar == " ") {
@@ -170,40 +162,29 @@ document.addEventListener('keydown', (event) => {
         calcInput.textContent = calcInput.textContent.slice(0, -1); 
         tempCurrentNumber.pop();
     }
-    // Numbers loop
-    for (let i = 0; i <= 9; i++)
-    {
-        if (key == i)
-        {
-            // Don't allow multiple 0's to be added prior to anything
-            if (tempCurrentNumber.length == 0 && key == 0) {
-                return;
-            }
-            calcInput.textContent += i;
-            tempCurrentNumber.push(i);
-        }
+    else if (key == '.') {
+        periodEvent();
+        return;
+    }
+    else if (key >= 0 && key <= 9) {
+        numberInput(key);
+        return;
     }
     callOperators(key);
 })
 // Click events
 document.querySelectorAll('.calc-buttons').forEach(button => {
-    button.addEventListener('click', event => {
+    button.addEventListener('mousedown', event => {
+        lastChar = calcInput.textContent.slice(-1);
         const btnNum = button.getAttribute("value")
-        // Stops miss-entrie3s into calc display
-        if (!(button.getAttribute("value"))) {
+        if (btnNum == ".") {
+            periodEvent();
             return;
         }
-        if (btnNum >= 1 && btnNum <= 9)
-        {
-            calcInput.textContent += btnNum;
-            tempCurrentNumber.push(btnNum);
+        if (btnNum >= 0 && btnNum <= 9)
+        {   
+            numberInput(btnNum);
             return;
         }
         callOperators(btnNum);
-        // Stops clear being called multiple times
-        if (btnNum == "clear") {
-            event.stopPropagation();
-        }
-    })
-});
-
+})});
