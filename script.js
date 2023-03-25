@@ -2,16 +2,6 @@
 const calcInput = document.getElementById("calc-input");
 const calcOutput = document.getElementById("calc-sum");
 
-const buttonZero = document.getElementById("but-0");
-const buttonPoint = document.getElementById("but-point");
-
-const buttonClear = document.getElementById("but-AC");
-const buttonDivide = document.getElementById("but-divide");
-const buttonAdd = document.getElementById("but-add");
-const buttonMinus = document.getElementById("but-minus");
-const buttonMultiply = document.getElementById("but-multiply");
-const buttonEquals = document.getElementById("but-equals");
-
 let operatorCheck = 0, tempNum1 = 0, tempNum2 = 0;
 let currentOperator = "", lastChar = "";
 let tempCurrentNumber = [];
@@ -31,7 +21,6 @@ function divide (a, b) {
 }
 function operate() {
     let total = 0;
-    console.log(`Current Operator = ${currentOperator}`);
     // Check which operator is used
     if (currentOperator == "+") {
         total = add(tempNum1, tempNum2)
@@ -50,19 +39,6 @@ function operate() {
     // Resets tempNum1 to current sum, to continue operations
     tempNum1 = total;
     return;
-}
-// Operator functions
-function additionEvent() {
-    operatorEvent("+")
-}
-function subtractEvent() {
-    operatorEvent("-");
-}
-function divideEvent() {
-    operatorEvent("/");
-}
-function multiplyEvent() {
-    operatorEvent("*");
 }
 function operatorEvent(symbol) {
     if (tempCurrentNumber.length == 0) {
@@ -87,8 +63,8 @@ function checkTempNum1(symbol) {
     tempNum1 = Number(tempCurrentNumber.join(''));
     tempCurrentNumber = [];
     operatorCheck = 1;
-    calcInput.textContent += " " + symbol + " ";
     currentOperator = symbol;
+    calcInput.textContent += " " + symbol + " ";
     return;
 }
 function checkTempNum2(symbol) {
@@ -98,11 +74,8 @@ function checkTempNum2(symbol) {
     currentOperator = symbol;
     calcInput.textContent += " " + symbol + " ";
 }
-
 function sumEvent() {
-    console.log("sumEvent triggered")
     if (tempCurrentNumber.length == 0) {
-        console.log("tempCurrentNumber.len triggered")
         return;
     }   
     tempNum2 = Number(tempCurrentNumber.join(''));
@@ -113,7 +86,6 @@ function sumEvent() {
     });
     tempNum1 = 0;
 }
-
 function zeroEvent() {
     if (tempCurrentNumber.length == 0)
     {
@@ -121,9 +93,8 @@ function zeroEvent() {
         tempCurrentNumber.push("0.");
         return;
     }
-    calcInput.textContent += buttonZero.textContent;
+    calcInput.textContent += "0";
 }
-
 function pointEvent() {
     if (tempCurrentNumber.length == 0 || lastChar == ".")
     {
@@ -134,31 +105,66 @@ function pointEvent() {
     tempCurrentNumber.push(".");
     calcInput.textContent += ".";
 }
-
 function clearMemory() {
     tempCurrentNumber = [];
     tempNum1 = 0;
     tempNum2 = 0;
     operatorCheck = 0;
 }
-
-// Event Listeners
+function deleteOperator(key) {
+    calcInput.textContent = calcInput.textContent.slice(0, -3);
+        currentOperator = "";
+        operatorCheck = 0;
+        for (let i = 0; i < 3; i++) {
+            tempCurrentNumber.pop();
+        }
+        // Resets variables to pre-operator status
+        tempNum1.toString().split("").forEach(temp => {
+            tempCurrentNumber.push(temp);
+        });
+        tempNum1 = 0;    
+}
+function callOperators(operator) {
+    switch (operator) {
+        case "+":
+            operatorEvent(operator);
+            return;
+        case "-":
+            operatorEvent(operator);
+            return;
+        case "/":
+            operatorEvent(operator);
+            return;
+        case "*":
+            operatorEvent(operator);
+            return;
+        case "=":
+            sumEvent();
+            return;
+        case "0":
+            zeroEvent();
+            return;
+        case ".":
+            pointEvent();
+            return;
+        case "c":
+            clearMemory();
+            calcOutput.textContent = "";
+            calcInput.textContent = ""; 
+            return;
+        case "Enter":
+            sumEvent();
+            return;
+    };
+}
+// Keyboard events
 document.addEventListener('keydown', (event) => { 
     lastChar = calcInput.textContent.slice(-1);
     // Removing last key
-    if (event.key == 'Backspace') {
+    let key = event.key;
+    if (key == 'Backspace') {
         if (lastChar == " ") {
-            calcInput.textContent = calcInput.textContent.slice(0, -3);
-            currentOperator = "";
-            operatorCheck = 0;
-            for (let i = 0; i < 3; i++) {
-                tempCurrentNumber.pop();
-            }
-            // Resets variables to pre-operator status
-            tempNum1.toString().split("").forEach(temp => {
-                tempCurrentNumber.push(temp);
-            });
-            tempNum1 = 0;
+            deleteOperator(key);
             return;
         }
         calcInput.textContent = calcInput.textContent.slice(0, -1); 
@@ -167,63 +173,37 @@ document.addEventListener('keydown', (event) => {
     // Numbers loop
     for (let i = 0; i <= 9; i++)
     {
-        if (event.key == i)
+        if (key == i)
         {
             // Don't allow multiple 0's to be added prior to anything
-            if (tempCurrentNumber.length == 0 && event.key == 0) {
+            if (tempCurrentNumber.length == 0 && key == 0) {
                 return;
             }
             calcInput.textContent += i;
             tempCurrentNumber.push(i);
         }
     }
-    if (event.key == ".") {
-        pointEvent();
-    }
-    // Operators
-    else if (event.key == "/") {
-        divideEvent();
-    }
-    else if (event.key == "*") {
-        multiplyEvent();
-    }
-    else if (event.key == "-") {
-        subtractEvent();
-    }
-    else if (event.key == "+") {
-        additionEvent();
-    }
-    else if (event.key == "=" || event.key == "Enter") {
-        sumEvent();
-    }
+    callOperators(key);
 })
-
+// Click events
 document.querySelectorAll('.calc-buttons').forEach(button => {
     button.addEventListener('click', event => {
-        alert("hi");
+        const btnNum = button.getAttribute("value")
         // Stops miss-entrie3s into calc display
         if (!(button.getAttribute("value"))) {
             return;
         }
-        const btnNum = button.getAttribute("value")
-        calcInput.textContent += btnNum;
-        tempCurrentNumber.push(btnNum);
+        if (btnNum >= 1 && btnNum <= 9)
+        {
+            calcInput.textContent += btnNum;
+            tempCurrentNumber.push(btnNum);
+            return;
+        }
+        callOperators(btnNum);
+        // Stops clear being called multiple times
+        if (btnNum == "clear") {
+            event.stopPropagation();
+        }
     })
 });
 
-buttonAdd.addEventListener("click", additionEvent);
-buttonMinus.addEventListener("click", subtractEvent);
-buttonDivide.addEventListener("click", divideEvent);
-buttonMultiply.addEventListener("click", multiplyEvent);
-buttonZero.addEventListener("click", zeroEvent);
-buttonClear.addEventListener("mousedown", () => {
-    clearMemory();
-    calcOutput.textContent = "";
-    calcInput.textContent = "";
-});
-buttonPoint.addEventListener("click", () => {
-    pointEvent();
-})
-buttonEquals.addEventListener("click", () => {
-    sumEvent();
-});
