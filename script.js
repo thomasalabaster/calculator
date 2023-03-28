@@ -1,12 +1,17 @@
+
 // Init variables and consts
 const calcInput = document.getElementById("calc-input");
 const calcOutput = document.getElementById("calc-sum");
+const calcCharcoal = document.getElementsByClassName("calc-charcoal");
+const calcGrey = document.getElementsByClassName("calc-grey");
+const calcOrange = document.getElementsByClassName("calc-orange");
 
 let operatorCheck = 0, tempNum1 = 0, tempNum2 = 0;
 let currentOperator = "", lastChar = "";
 let tempCurrentNumber = [];
 // calcDone clears screen instead if user types number after original sum
 let calcDone = false;
+const maxDigits = 12;
 
 // Functions
 function operate() {
@@ -24,7 +29,13 @@ function operate() {
     else {
         total = tempNum1 * tempNum2;
     }
-    calcOutput.textContent = total.toLocaleString("en-UK");
+    // convert to scientific if too big
+    let outputValue = parseFloat(total);
+    if (outputValue.toString().length > maxDigits) {
+        outputValue = outputValue.toExponential(2)
+    }
+    calcOutput.textContent = outputValue.toLocaleString("en-UK");
+
     clearMemory();
     // Resets tempNum1 to current sum, to continue operations
     tempNum1 = total;
@@ -130,7 +141,7 @@ function clearCalc() {
     return;
 }
 function periodEvent() {
-    if (lastChar == ".") {
+    if (lastChar == "." || tempCurrentNumber.includes(".")){
         return;
     }
     calcInput.textContent += "."
@@ -150,10 +161,39 @@ function numberInput(number) {
         }
     }
 }
+function changeButtonColour(button) {
+    // Add and remove colours from buttons upon selection.
+    button.classList.add("clicked");
+    setTimeout(function() {
+        button.classList.remove("clicked");
+    }, 200);
+    return;
+}
+function keydownColourChange(key) {
+    // Colour change animation upon keyPress, some error checking also
+    if (key == "Enter") {
+        key = "=";
+    }
+    else if (key == "Shift") {
+        return;
+    }
+    else if (key == 'Backspace')
+    {
+        return;
+    }
+    let selectedButton = document.querySelector(`button[value="${key}"]`);
+    try {
+        changeButtonColour(selectedButton);
+    }
+    catch(err) {}
+    return;
+}
 // Keyboard events
 document.addEventListener('keydown', (event) => {
     lastChar = calcInput.textContent.slice(-1);
+    // Obtain the actual key value (e.g. 1 or 2...)
     let key = event.key;
+    keydownColourChange(key);
     if (key == 'Backspace') {
         if (lastChar == " ") {
             deleteOperator(key);
@@ -173,9 +213,11 @@ document.addEventListener('keydown', (event) => {
     callOperators(key);
 })
 // Click events
-document.querySelectorAll('.calc-buttons').forEach(button => {
+document.querySelectorAll('button').forEach(button => {
     button.addEventListener('mousedown', event => {
+        changeButtonColour(button);
         lastChar = calcInput.textContent.slice(-1);
+        // Get the value of the button and proceed accordingly
         const btnNum = button.getAttribute("value")
         if (btnNum == ".") {
             periodEvent();

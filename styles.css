@@ -21,6 +21,10 @@ body {
     justify-content: flex-end;
     align-items: flex-end;
     flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 300px;
 }
 
 #calc-sum {
@@ -47,6 +51,7 @@ body {
 
 .calc-screen {
     height: 25%;
+    /* height: 150px; */
     width: 300px;
     /* border-style: solid;
     border-color: orange; */
@@ -55,7 +60,9 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .calc-numb {
@@ -74,26 +81,36 @@ body {
     justify-content: space-between;
 }
 
-.calc-buttons {
+button {
     height: 67.5px;
     width: 67.5px;
     border-radius: 50%;
     font-weight: normal;
-    font-size: 30px;
+    font-size: 34px;
+    border: none;
+    transition: background-color 0.25s;
+}
+.calc-charcoal {
     background-color: #313131;
     color: white;
-    border: none;
 }
-
-
-#but-AC, #but-plus-minus, #but-percent {
-    background-color: #9f9f9f;
-    color: #222222;
+.calc-charcoal.clicked {
+    color: #313131;
+    background-color: white;
 }
-#but-divide, #but-multiply, #but-minus, #but-add, #but-equals {
+.calc-orange {
     background-color: #f39b04;
     color: #f5f1e6;
 }
-
-
-
+.calc-orange.clicked {
+    color: #f39b04;
+    background-color: #f5f1e6;
+}
+.calc-grey {
+    background-color: #9f9f9f;
+    color: #222222;
+}
+.calc-grey.clicked {
+    color: #9f9f9f;
+    background-color: #222222;
+}
