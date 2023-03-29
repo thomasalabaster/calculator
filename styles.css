@@ -7,11 +7,10 @@ body {
 }
 
 #but-0 {
-    /* width: 150px; */
-    flex-grow: 2;
+    width: 144px;
     border-radius: 28px;
     text-align: left;
-    padding-left: 8%;
+    padding-left: 25px;
 }
 
 #calc-input {

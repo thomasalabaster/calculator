@@ -1,4 +1,3 @@
-
 // Init variables and consts
 const calcInput = document.getElementById("calc-input");
 const calcOutput = document.getElementById("calc-sum");
@@ -14,7 +13,6 @@ let calcDone = false;
 let percentCheck = false;
 const maxDigits = 12;
 let total = 0;
-let inputText = calcInput.textContent;
 
 // Functions
 function operate() {
@@ -37,7 +35,6 @@ function operate() {
         outputValue = outputValue.toExponential(2)
     }
     calcOutput.textContent = outputValue.toLocaleString("en-UK");
-
     clearMemory();
     // Resets tempNum1 to current sum, to continue operations
     tempNum1 = total;
@@ -47,6 +44,16 @@ function operate() {
 function operatorEvent(symbol) {
     calcDone = false;
     if (tempCurrentNumber.length == 0) {
+        // Allow negative numbers to be entered
+        if (symbol == "-" || tempCurrentNumber[0] != "-") {
+            calcInput.textContent += "-";
+            tempCurrentNumber.push("-");
+        }
+        return;
+    }
+    // Stops multiple "-" being added
+    if (tempCurrentNumber.length == 1 && tempCurrentNumber[0] == "-")
+    {
         return;
     }
     // Stops some operator being displayed twice
@@ -212,30 +219,6 @@ function backspaceEvent(key) {
         return;
     }
 }
-// Keyboard events
-document.addEventListener('keydown', (event) => {
-    lastChar = calcInput.textContent.slice(-1);
-    // Obtain the actual key value (e.g. 1 or 2...)
-    let key = event.key;
-    keydownColourChange(key);
-    if (key == 'Backspace') {
-        backspaceEvent(key);
-    }
-    else if (key == '.') {
-        periodEvent();
-        return;
-    }
-    else if (key == "%")
-    {   
-        percentEvent();
-        return;
-    }
-    else if (key >= 0 && key <= 9) {
-        numberInput(key);
-        return;
-    }
-    callOperators(key);
-})
 function modifyCalcOutput(char) {
     // Modify the calcOutput for +/- or % buttons, if calc has been done
     if (calcOutput.textContent[0] == char) {
@@ -284,7 +267,6 @@ function percentEventOutput(operator) {
     }
     return;
 }
-
 function plusMinusEvent() {
     if (tempCurrentNumber.length == 0) {
         return;
@@ -325,6 +307,30 @@ function plusMinusEvent() {
     }
     return;
 }
+// Keyboard events
+document.addEventListener('keydown', (event) => {
+    lastChar = calcInput.textContent.slice(-1);
+    // Obtain the actual key value (e.g. 1 or 2...)
+    let key = event.key;
+    keydownColourChange(key);
+    if (key == 'Backspace') {
+        backspaceEvent(key);
+    }
+    else if (key == '.') {
+        periodEvent();
+        return;
+    }
+    else if (key == "%")
+    {   
+        percentEvent();
+        return;
+    }
+    else if (key >= 0 && key <= 9) {
+        numberInput(key);
+        return;
+    }
+    callOperators(key);
+})
 // Click events
 document.querySelectorAll('button').forEach(button => {
     button.addEventListener('mousedown', event => {
