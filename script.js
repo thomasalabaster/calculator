@@ -11,11 +11,13 @@ let currentOperator = "", lastChar = "";
 let tempCurrentNumber = [];
 // calcDone clears screen instead if user types number after original sum
 let calcDone = false;
+let percentCheck = false;
 const maxDigits = 12;
+let total = 0;
+let inputText = calcInput.textContent;
 
 // Functions
 function operate() {
-    let total = 0;
     // Check which operator is used
     if (currentOperator == "+") {
         total = tempNum1 + tempNum2;
@@ -87,6 +89,7 @@ function sumEvent() {
     tempNum1.toString().split("").forEach(temp => {
         tempCurrentNumber.push(temp);
     });
+    percentCheck = false; // Allows for sum of operation to be % modified
     tempNum1 = 0;
 }
 function clearMemory() {
@@ -135,6 +138,7 @@ function callOperators(operator) {
 }
 function clearCalc() {
     clearMemory();
+    percentCheck = false;
     calcOutput.textContent = "";
     calcInput.textContent = ""; 
     calcDone = false;
@@ -182,11 +186,31 @@ function keydownColourChange(key) {
         return;
     }
     let selectedButton = document.querySelector(`button[value="${key}"]`);
+    // Error catching for type error, e.g. letter pressed
     try {
         changeButtonColour(selectedButton);
     }
     catch(err) {}
     return;
+}
+function backspaceEvent(key) {
+    if (lastChar == " ") {
+        deleteOperator(key);
+        // Check if calc input cleared, if so,hard reset.
+        if (calcInput.textContent.length == 0) {
+            clearCalc();
+            clearMemory();
+        }
+        return;
+    }
+    calcInput.textContent = calcInput.textContent.slice(0, -1); 
+    tempCurrentNumber.pop();
+    // Check if calc input cleared, if so, hard reset
+    if (calcInput.textContent == 0) {
+        clearCalc();
+        clearMemory();
+        return;
+    }
 }
 // Keyboard events
 document.addEventListener('keydown', (event) => {
@@ -195,15 +219,15 @@ document.addEventListener('keydown', (event) => {
     let key = event.key;
     keydownColourChange(key);
     if (key == 'Backspace') {
-        if (lastChar == " ") {
-            deleteOperator(key);
-            return;
-        }
-        calcInput.textContent = calcInput.textContent.slice(0, -1); 
-        tempCurrentNumber.pop();
+        backspaceEvent(key);
     }
     else if (key == '.') {
         periodEvent();
+        return;
+    }
+    else if (key == "%")
+    {   
+        percentEvent();
         return;
     }
     else if (key >= 0 && key <= 9) {
@@ -212,6 +236,95 @@ document.addEventListener('keydown', (event) => {
     }
     callOperators(key);
 })
+function modifyCalcOutput(char) {
+    // Modify the calcOutput for +/- or % buttons, if calc has been done
+    if (calcOutput.textContent[0] == char) {
+        calcOutput.textContent = calcOutput.textContent.substring(1);
+        tempCurrentNumber.shift();
+    }
+    else {
+        calcOutput.textContent = char + calcOutput.textContent; 
+        tempCurrentNumber.unshift(char);
+    }
+}
+function percentEvent() {
+    // Convert number to a percent, reverse the operation
+    if (lastChar == "."  || tempCurrentNumber.length == 0) {
+        return;
+    }
+    if (!percentCheck) {
+        percentEventOutput("/");
+        return;
+    }
+    else if (percentCheck) {
+        percentEventOutput("*");
+        return;
+    }
+}
+function percentEventOutput(operator) {
+    // Modify the calcScreen if % button pressed
+    let tempNumber;
+    if (operator == "*") {
+        tempNumber = parseFloat(tempCurrentNumber.join("")) * 100;
+        percentCheck = false;
+    }
+    else if (operator == "/") {
+        tempNumber = parseFloat(tempCurrentNumber.join("")) / 100;
+        percentCheck = true;
+    }
+    if (calcDone) { // Modify value after a calculation
+        calcOutput.textContent = calcOutput.textContent.slice(0, -(tempCurrentNumber.length));
+        tempCurrentNumber = tempNumber.toString().split("");
+        calcOutput.textContent += tempCurrentNumber.join("");
+    }
+    else { // Modify current value (pre-calculation)
+        calcInput.textContent = calcInput.textContent.slice(0, -(tempCurrentNumber.length));
+        tempCurrentNumber = tempNumber.toString().split("");
+        calcInput.textContent += tempCurrentNumber.join("");
+    }
+    return;
+}
+
+function plusMinusEvent() {
+    if (tempCurrentNumber.length == 0) {
+        return;
+    } 
+    // Check if calc done already, if so modify calcOutput not calcInput
+    if (calcDone) {
+        modifyCalcOutput("-");
+        return;
+    }
+    // Check if calc is mid calculation, and operator has been selected
+    if (operatorCheck == 1 && !calcDone) 
+    {
+        let tempLen = tempCurrentNumber.length
+        if (tempCurrentNumber[0] == "-") {
+            tempCurrentNumber.shift();
+            calcInput.textContent = calcInput.textContent.replace('-', '');
+            return;
+        }
+        else {
+            tempCurrentNumber.splice(0, 0, "-");
+            calcInput.textContent = calcInput.textContent.slice(0, -tempLen ) + "-" + calcInput.textContent.slice(-tempLen);
+        }
+        return;
+    }
+    //
+    if (tempCurrentNumber[0] !== '-') {
+        // If the first character of tempCurrentNumber is not "-", add it to the beginning
+        tempCurrentNumber.unshift('-');
+        calcInput.textContent = "-" + calcInput.textContent;
+        return;
+    }
+    // Reverse of previous operation
+    if (tempCurrentNumber[0] == '-') {
+        console.log("hi");
+        tempCurrentNumber.shift();
+        calcInput.textContent = calcInput.textContent.substring(1);
+        return;
+    }
+    return;
+}
 // Click events
 document.querySelectorAll('button').forEach(button => {
     button.addEventListener('mousedown', event => {
@@ -219,11 +332,19 @@ document.querySelectorAll('button').forEach(button => {
         lastChar = calcInput.textContent.slice(-1);
         // Get the value of the button and proceed accordingly
         const btnNum = button.getAttribute("value")
-        if (btnNum == ".") {
+        if (btnNum == "plusMinus") {
+            plusMinusEvent();
+            return;
+        }
+        else if (btnNum == "percent") {
+            percentEvent();
+            return;
+        }
+        else if (btnNum == ".") {
             periodEvent();
             return;
         }
-        if (btnNum >= 0 && btnNum <= 9)
+        else if (btnNum >= 0 && btnNum <= 9)
         {   
             numberInput(btnNum);
             return;
